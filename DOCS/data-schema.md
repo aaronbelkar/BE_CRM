@@ -1,0 +1,102 @@
+# 📊 Data Schema: Sovereign CRM & Kanban Hub
+
+> **The Source of Truth:** This document defines the database tables, relations, indexes, and type engines using Drizzle ORM syntax tailored for Hostinger Managed MySQL. It serves as the data mapping blueprint for Jules and Antigravity[cite: 2].
+
+---
+
+## 1. Database Overview
+*The high-level structure of your data storage ecosystem[cite: 2].*
+
+- **Type:** Relational / Structured SQL Engine[cite: 2]
+- **Provider:** Hostinger Managed MySQL Service[cite: 4]
+- **ORM / Query Builder:** Drizzle ORM (Strictly Typed TypeScript Definitions)
+
+---
+
+## 2. Table Schemas
+*Core structural tables written in target Drizzle-compatible relational formats[cite: 2].*
+
+### Table: `users`
+*Tracks authorized manual operators for dashboard access.*
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | int | PK, AUTO_INCREMENT | Internal user counter identifier |
+| `username` | varchar(255) | Unique, Not Null | Unique identifier handle for entry |
+| `password_hash` | varchar(255) | Not Null | Securely hashed password string |
+| `created_at` | timestamp | Default: `now()` | Date the account profile was created[cite: 2] |
+
+### Table: `leads`
+*Stores inbound business opportunities, client records, and high-level communications.*
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | int | PK, AUTO_INCREMENT | Primary reference key |
+| `company_name` | varchar(255) | Not Null | Corporate entity name |
+| `contact_name` | varchar(255) | Not Null | Primary human contact point |
+| `email` | varchar(255) | Not Null | Email address parameter[cite: 2] |
+| `status` | varchar(50) | Not Null, Default: 'NEW' | Enforced CRM operation status workflow state |
+| `created_at` | timestamp | Default: `now()` | Auto-populated timestamp |
+| `updated_at` | timestamp | Default: `now()`, ON UPDATE | System trace field |
+
+### Table: `tasks`
+*The functional execution layer driving the Kanban workspace.*
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | varchar(36) | PK, Default: UUID | Unique identifier string mapping Kanban cards |
+| `lead_id` | int | FK -> `leads.id`, Optional | Direct link back to originating client lead |
+| `title` | varchar(255) | Not Null | Core item descriptive title |
+| `description` | text | Optional | Verbose project goals, notes, or telemetry fields |
+| `status` | varchar(50) | Not Null, Default: 'BACKLOG' | Active Kanban board track column location placement |
+| `progress_updates`| text | Optional | Flat text block tracking current completion progress |
+| `updated_at` | timestamp | Default: `now()`, ON UPDATE | Track metrics |
+
+### Table: `audit_logs`
+*The background audit trail ledger recording changes made by the human operator or background AI agent[cite: 5].*
+
+| Column | Type | Constraints | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | int | PK, AUTO_INCREMENT | System serial counter index |
+| `actor` | varchar(50) | Not Null | Entity that made the update (`OPERATOR` / `AGENT_CHUCK`) |
+| `entity_type` | varchar(50) | Not Null | Target collection changed (`LEAD` / `TASK`) |
+| `entity_id` | varchar(255) | Not Null | String-based key linking back to source record |
+| `old_status` | varchar(50) | Not Null | Flat text capture of state prior to modification |
+| `new_status` | varchar(50) | Not Null | Flat text capture of newly applied state target |
+| `timestamp` | timestamp | Default: `now()` | The immutable time event execution finalized |
+
+---
+
+## 3. Data Relationships (ERD Mapping Logic)
+*Explicit relational integrity maps for compiling structural joins[cite: 2].*
+
+- **One-to-Many Relationships:**
+  - `leads.id` -> `tasks.lead_id` (One business lead can expand into multiple executable Kanban actions).
+- **Cascade Rules:**
+  - On deletion of a `Lead`, associated `tasks.lead_id` fields are set to `SET NULL` rather than dropped. This preserves historical task telemetry data for open-source diagnostic review.
+
+---
+
+## 4. State Constraints (Enforced Enumerations)
+*Deterministic validation patterns monitored strictly during runtime mutations.*
+
+```typescript
+export const leadStatusEnum = ['NEW', 'PENDING_CONTACT', 'QUALIFIED', 'PROPOSAL', 'WON', 'LOST'] as const;
+export const taskStatusEnum = ['BACKLOG', 'ASSIGNED', 'IN_PROGRESS', 'REVIEW', 'DONE'] as const;
+export const actorTypeEnum  = ['OPERATOR', 'AGENT_CHUCK'] as const;
+
+## 5. Security & Index Optimization
+
+### Index Definitions:
+
+- `idx_leads_status: Applied directly on leads(status)` to yield instant render computations for the dashboard dashboard panel blocks.
+
+- `idx_tasks_status`: Applied on tasks(status) driving high-density column sorting metrics within frontend views.
+
+- `idx_audit_entity`: Composite key index tracking audit_logs(entity_type, entity_id) to let operators see an object's history instantaneously.
+
+### Access Logic:
+
+- Human clients fetch rows via valid session cookies generated by verification matching against the users collection.
+
+- Requests hitting the API core via the agent check against a system environment matching static validation tokens, overriding operational rules with strict structural tracking attributes.
