@@ -1096,89 +1096,91 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
         <div className="space-y-6">
           {/* ---- CONTACTS: flat table layout ---- */}
           {isContactsBoard ? (
-            <div className="bg-surface border border-border-color rounded-3xl overflow-hidden">
-              {/* Table Header */}
-              <div className="grid grid-cols-[1fr_1fr_1fr_1fr_160px] gap-0 border-b border-border-color bg-background/60">
-                {['NAME', 'COMPANY', 'EMAIL', 'PHONE', 'ACTIONS'].map((col) => (
-                  <div key={col} className="px-5 py-3 text-[10px] font-mono font-bold text-text-muted tracking-widest uppercase border-r last:border-r-0 border-border-color">
-                    {col}
+            <div className="bg-surface border border-border-color rounded-3xl overflow-x-auto">
+              <div className="min-w-[800px]">
+                {/* Table Header */}
+                <div className="grid grid-cols-[1fr_1fr_1fr_1fr_160px] gap-0 border-b border-border-color bg-background/60">
+                  {['NAME', 'COMPANY', 'EMAIL', 'PHONE', 'ACTIONS'].map((col) => (
+                    <div key={col} className="px-5 py-3 text-[10px] font-mono font-bold text-text-muted tracking-widest uppercase border-r last:border-r-0 border-border-color">
+                      {col}
+                    </div>
+                  ))}
+                </div>
+                {/* Table Rows */}
+                {cards.length === 0 && (
+                  <div className="text-center py-10 text-xs font-mono text-text-muted/50">
+                    no_contacts_found
+                  </div>
+                )}
+                {cards.map((card, idx) => (
+                  <div
+                    key={card.id}
+                    className={`grid grid-cols-[1fr_1fr_1fr_1fr_160px] gap-0 items-center hover:bg-background/40 transition-colors ${
+                      idx !== cards.length - 1 ? 'border-b border-border-color' : ''
+                    }`}
+                  >
+                    {/* Name */}
+                    <div
+                      onClick={() => openDetailModal(card)}
+                      className="px-5 py-3.5 cursor-pointer min-w-0 border-r border-border-color"
+                    >
+                      <span className="text-sm font-bold text-text-main hover:text-[#e67e22] transition-colors font-serif truncate block">
+                        {card.title}
+                      </span>
+                      <span className="text-[10px] font-mono text-text-muted">{card.id}</span>
+                    </div>
+                    {/* Company */}
+                    <div className="px-5 py-3.5 border-r border-border-color min-w-0">
+                      <span className="text-xs text-text-main font-mono truncate block">
+                        {card.subtitle || <span className="text-text-muted/40">—</span>}
+                      </span>
+                    </div>
+                    {/* Email */}
+                    <div className="px-5 py-3.5 border-r border-border-color min-w-0">
+                      {card.email ? (
+                        <a
+                          href={`mailto:${card.email}`}
+                          className="text-xs text-[#e67e22] hover:underline font-mono truncate block"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {card.email}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-text-muted/40 font-mono">—</span>
+                      )}
+                    </div>
+                    {/* Phone */}
+                    <div className="px-5 py-3.5 border-r border-border-color min-w-0">
+                      {card.phone ? (
+                        <a
+                          href={`tel:${card.phone}`}
+                          className="text-xs text-text-main hover:text-[#e67e22] font-mono truncate block transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {card.phone}
+                        </a>
+                      ) : (
+                        <span className="text-xs text-text-muted/40 font-mono">—</span>
+                      )}
+                    </div>
+                    {/* Actions */}
+                    <div className="px-4 py-3 flex items-center gap-2 flex-shrink-0">
+                      <button
+                        onClick={() => openDetailModal(card)}
+                        className="px-3 py-1 text-[10px] font-mono border border-border-color rounded-full bg-background hover:bg-surface text-text-main hover:text-[#e67e22] transition-all cursor-pointer font-bold"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(card.id)}
+                        className="px-3 py-1 text-[10px] font-mono border border-border-color rounded-full bg-background hover:bg-surface text-text-main hover:text-red-500 transition-all cursor-pointer font-bold"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-              {/* Table Rows */}
-              {cards.length === 0 && (
-                <div className="text-center py-10 text-xs font-mono text-text-muted/50">
-                  no_contacts_found
-                </div>
-              )}
-              {cards.map((card, idx) => (
-                <div
-                  key={card.id}
-                  className={`grid grid-cols-[1fr_1fr_1fr_1fr_160px] gap-0 items-center hover:bg-background/40 transition-colors ${
-                    idx !== cards.length - 1 ? 'border-b border-border-color' : ''
-                  }`}
-                >
-                  {/* Name */}
-                  <div
-                    onClick={() => openDetailModal(card)}
-                    className="px-5 py-3.5 cursor-pointer min-w-0 border-r border-border-color"
-                  >
-                    <span className="text-sm font-bold text-text-main hover:text-[#e67e22] transition-colors font-serif truncate block">
-                      {card.title}
-                    </span>
-                    <span className="text-[10px] font-mono text-text-muted">{card.id}</span>
-                  </div>
-                  {/* Company */}
-                  <div className="px-5 py-3.5 border-r border-border-color min-w-0">
-                    <span className="text-xs text-text-main font-mono truncate block">
-                      {card.subtitle || <span className="text-text-muted/40">—</span>}
-                    </span>
-                  </div>
-                  {/* Email */}
-                  <div className="px-5 py-3.5 border-r border-border-color min-w-0">
-                    {card.email ? (
-                      <a
-                        href={`mailto:${card.email}`}
-                        className="text-xs text-[#e67e22] hover:underline font-mono truncate block"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {card.email}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-text-muted/40 font-mono">—</span>
-                    )}
-                  </div>
-                  {/* Phone */}
-                  <div className="px-5 py-3.5 border-r border-border-color min-w-0">
-                    {card.phone ? (
-                      <a
-                        href={`tel:${card.phone}`}
-                        className="text-xs text-text-main hover:text-[#e67e22] font-mono truncate block transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {card.phone}
-                      </a>
-                    ) : (
-                      <span className="text-xs text-text-muted/40 font-mono">—</span>
-                    )}
-                  </div>
-                  {/* Actions */}
-                  <div className="px-4 py-3 flex items-center gap-2 flex-shrink-0">
-                    <button
-                      onClick={() => openDetailModal(card)}
-                      className="px-3 py-1 text-[10px] font-mono border border-border-color rounded-full bg-background hover:bg-surface text-text-main hover:text-[#e67e22] transition-all cursor-pointer font-bold"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDelete(card.id)}
-                      className="px-3 py-1 text-[10px] font-mono border border-border-color rounded-full bg-background hover:bg-surface text-text-main hover:text-red-500 transition-all cursor-pointer font-bold"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
             </div>
           ) : (
           /* ---- STANDARD: grouped-by-status list ---- */
