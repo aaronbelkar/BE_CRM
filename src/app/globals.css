@@ -5,7 +5,7 @@
   --surface: #ffffff;
   --text-main: #1a1a1b;
   --text-muted: #5e5e60;
-  --border-color: #d0d3e7;
+  --border-color: #79828e;
 }
 
 html.dark {
@@ -13,7 +13,7 @@ html.dark {
   --surface: #25292d;
   --text-main: #ffffff;
   --text-muted: #e5e7e9;
-  --border-color: #d0d3e7;
+  --border-color: #79828e;
 }
 
 @theme inline {
