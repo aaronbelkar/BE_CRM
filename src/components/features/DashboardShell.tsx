@@ -26,8 +26,8 @@ export function DashboardShell({ activeBoardId, sidebarItems, logoutAction, chil
       )}
 
       {/* Sidebar Panel */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-surface border-r border-border-color flex flex-col flex-shrink-0 z-50 transform transition-transform duration-300 lg:static lg:transform-none ${
-        isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-surface border-r border-border-color flex flex-col flex-shrink-0 z-50 transform transition-transform duration-300 lg:static ${
+        isSidebarOpen ? 'translate-x-0' : 'max-lg:-translate-x-full'
       }`}>
         <div className="p-6 border-b border-border-color space-y-4">
           <div className="flex justify-between items-center">

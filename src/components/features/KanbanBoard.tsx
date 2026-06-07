@@ -945,7 +945,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
 
       {/* 1. KANBAN VIEW */}
       {activeView === 'kanban' && !isContactsBoard && (
-        <div className="flex flex-row gap-4 overflow-x-auto pb-4 flex-1 items-start min-h-[500px]">
+        <div className="flex flex-col lg:flex-row gap-4 overflow-y-auto lg:overflow-x-auto pb-4 flex-1 items-stretch lg:items-start min-h-[500px]">
           {columns.map((column) => {
             const columnCards = cards.filter((c) => c.status === column);
             const isCollapsed = collapsedColumns[column];
@@ -954,7 +954,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
               <div
                 key={column}
                 className={`flex flex-col bg-surface border border-border-color rounded-3xl p-4 flex-shrink-0 transition-all duration-300 ${
-                  isCollapsed ? 'w-[70px]' : 'w-[280px] sm:w-[320px]'
+                  isCollapsed ? 'w-[70px] lg:w-[70px]' : 'w-full lg:w-[320px]'
                 }`}
               >
                 {/* Column Header */}
