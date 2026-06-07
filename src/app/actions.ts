@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { db } from '../db';
 import { cards as cardsTable, subTasks as subTasksTable, orgMembers as orgMembersTable, activityLogs as activityLogsTable, users as usersTable } from '../db/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, or } from 'drizzle-orm';
 import { boardsConfig } from '../lib/mockData';
 
 export type ActionState = {
@@ -54,7 +54,10 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
       .from(usersTable)
       .where(
         and(
-          eq(usersTable.email, usernameOrEmail),
+          or(
+            eq(usersTable.email, usernameOrEmail),
+            eq(usersTable.name, usernameOrEmail)
+          ),
           eq(usersTable.password, password)
         )
       )

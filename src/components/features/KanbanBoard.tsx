@@ -944,7 +944,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
       </div>
 
       {/* 1. KANBAN VIEW */}
-      {activeView === 'kanban' && (
+      {activeView === 'kanban' && !isContactsBoard && (
         <div className="flex flex-row gap-4 overflow-x-auto pb-4 flex-1 items-start min-h-[500px]">
           {columns.map((column) => {
             const columnCards = cards.filter((c) => c.status === column);
@@ -1092,7 +1092,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
       )}
 
       {/* 2. LIST VIEW */}
-      {activeView === 'list' && (
+      {(activeView === 'list' || isContactsBoard) && (
         <div className="space-y-6">
           {/* ---- CONTACTS: flat table layout ---- */}
           {isContactsBoard ? (
@@ -1266,7 +1266,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
       )}
 
       {/* 3. CALENDAR VIEW */}
-      {activeView === 'calendar' && (
+      {activeView === 'calendar' && !isContactsBoard && (
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Main Month Grid */}
           <div className="flex-1 bg-surface border border-border-color rounded-3xl p-6">
