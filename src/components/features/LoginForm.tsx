@@ -56,7 +56,7 @@ export function LoginForm() {
               required
               disabled={isPending}
               className="w-full px-5 py-2.5 bg-background border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
-              placeholder="operator@sovereign.io"
+              placeholder="test@test.com"
             />
           </div>
           <div>

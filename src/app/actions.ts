@@ -17,7 +17,7 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
   const password = formData.get('password') as string;
 
   // 1. Hardcoded admin check
-  if (usernameOrEmail === 'admin' && password === '!Qaz@Wsx') {
+  if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com') && password === 'test1234') {
     const cookieStore = await cookies();
     cookieStore.set('session', 'authenticated', {
       httpOnly: true,
@@ -33,9 +33,9 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
       if (u.length === 0) {
         await db.insert(usersTable).values({
           id: 'admin-user',
-          name: 'Operator',
-          email: 'operator@sovereign.io',
-          password: '!Qaz@Wsx',
+          name: 'test',
+          email: 'test@test.com',
+          password: 'test1234',
           role: 'Lead Operator',
           avatar: 'silhouette',
         });

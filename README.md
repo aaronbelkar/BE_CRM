@@ -38,7 +38,7 @@ npx drizzle-kit push
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — default login: `admin / !Qaz@Wsx`
+Open [http://localhost:3000](http://localhost:3000) — default login: `test / test1234` (or `test@test.com / test1234`)
 
 ---
 
