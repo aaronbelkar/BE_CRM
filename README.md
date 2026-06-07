@@ -571,3 +571,16 @@ This applies the schema to the local SQLite file without data loss for existing 
 
 The DB is automatically seeded with sample data on first load of each board.  
 To reset a board's data: delete all rows from the `cards` table for that board, then reload the page.
+
+---
+
+## Changelog
+
+### Version 1.1.0 — Latest Updates
+- **SQLite Database Integration & Drizzle ORM:** Migrated from volatile browser-based `localStorage` to a persistent local SQLite backend (`local.db`) using Drizzle ORM.
+- **Agent REST API (`/api/v1/*`):** Designed and verified a full CRUD REST API for boards and tickets enabling seamless AI agent (Gemini, OpenAI, n8n, Make) integrations. Fully documented with copy-pasteable SDK schemas and Python dispatch wrappers.
+- **Operator Registration & Authentication:** Replaced hardcoded access with a full Signup/Login system. LoginForm now features animated tab toggling and verifies credentials against both registered Name (Username) and Email in the SQLite database. Added a new default login (`test` / `test1234`).
+- **Mobile Responsiveness & Sidebar Drawer:** Implemented a hamburger menu overlay drawer (`DashboardShell.tsx`) on viewports under `1024px` and set up Kanban board columns to stack vertically on mobile.
+- **Horizontal Table Scrolling:** Wrapped the list-only Contacts directory in a scrollable frame to prevent squishing on narrow screens.
+- **Vercel Serverless Optimizations:** Fixed Next.js function compilation crashes by copying the seeded SQLite database template to `/tmp/local.db` at runtime, and added server-side redirects on root `/` and `/login` to avoid static reload conflicts.
+- **Logo Asset Routing:** Copied brand assets to `/public/assets/` and updated pages to dynamically swap logos depending on CSS dark/light theme context.
