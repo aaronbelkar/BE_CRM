@@ -1,7 +1,17 @@
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { LoginForm } from '../../components/features/LoginForm';
 import { ThemeToggle } from '../../components/features/ThemeToggle';
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session');
+  const isLoggedIn = session && session.value === 'authenticated';
+
+  if (isLoggedIn) {
+    redirect('/dashboard');
+  }
+
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center p-6 bg-background text-text-main font-sans transition-colors duration-200">
       {/* Theme Toggle Button */}
@@ -13,12 +23,12 @@ export default function LoginPage() {
         <div className="mb-8 flex flex-col items-center">
           <div className="relative w-20 h-20 mb-4">
             <img
-              src="/BE logo light theme.png"
+              src="/assets/BE logo light theme.png"
               alt="BE Logo"
               className="h-full w-full object-contain block dark:hidden"
             />
             <img
-              src="/BE logo dark theme.png"
+              src="/assets/BE logo dark theme.png"
               alt="BE Logo"
               className="h-full w-full object-contain hidden dark:block"
             />
