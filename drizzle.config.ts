@@ -1,14 +1,10 @@
 import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
-  schema: './src/db/schema/*',
+  schema: './src/db/schema.ts',
   out: './src/db/migrations',
-  dialect: 'mysql',
+  dialect: 'sqlite',
   dbCredentials: {
-    host: process.env.DATABASE_HOST || '127.0.0.1',
-    user: process.env.DATABASE_USER || 'root',
-    password: process.env.DATABASE_PASSWORD || '',
-    database: process.env.DATABASE_NAME || 'be_crm',
-    port: Number(process.env.DATABASE_PORT) || 3306,
+    url: process.env.DATABASE_URL || 'file:./src/db/local.db',
   },
 });

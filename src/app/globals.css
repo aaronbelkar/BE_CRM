@@ -1,26 +1,39 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f5f6;
+  --surface: #ffffff;
+  --text-main: #1a1a1b;
+  --text-muted: #5e5e60;
+  --border-color: #d0d3e7;
+}
+
+html.dark {
+  --background: #1a1a1b;
+  --surface: #25292d;
+  --text-main: #ffffff;
+  --text-muted: #e5e7e9;
+  --border-color: #d0d3e7;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-surface: var(--surface);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-border-color: var(--border-color);
+  
+  --font-sans: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-ibm-plex-serif), ui-serif, Georgia, serif;
 }
 
 body {
   background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text-main);
+  font-family: var(--font-space-grotesk), ui-sans-serif, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-ibm-plex-serif), ui-serif, Georgia, serif;
+  font-weight: 700;
 }
