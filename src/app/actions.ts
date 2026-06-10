@@ -32,8 +32,7 @@ async function upsertAdminUser() {
         avatar: 'silhouette',
         approved: true,
       })
-      .onConflictDoUpdate({
-        target: usersTable.id,
+      .onDuplicateKeyUpdate({
         set: {
           name: 'admin',
           email: 'admin@sovereign.io',

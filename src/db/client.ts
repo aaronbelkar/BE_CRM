@@ -1,39 +1,17 @@
-import { createClient } from '@libsql/client';
-import path from 'path';
-import fs from 'fs';
+import mysql from 'mysql2/promise';
 
-let dbUrl = process.env.DATABASE_URL;
-
-if (!dbUrl) {
-  const isVercel = process.env.VERCEL === '1';
-  const bundledDbPath = path.join(process.cwd(), 'src/db/local.db');
-  const publicDbPath = path.join(process.cwd(), 'public/assets/local.db');
-
-  if (isVercel) {
-    const writableDbPath = '/tmp/local.db';
-    try {
-      if (!fs.existsSync(writableDbPath)) {
-        if (fs.existsSync(publicDbPath)) {
-          fs.copyFileSync(publicDbPath, writableDbPath);
-          console.log('Successfully copied public DB to /tmp/local.db');
-        } else if (fs.existsSync(bundledDbPath)) {
-          fs.copyFileSync(bundledDbPath, writableDbPath);
-          console.log('Successfully copied src DB to /tmp/local.db');
-        } else {
-          console.warn('No bundled database template found');
-        }
-      }
-    } catch (e) {
-      console.error('Failed to copy database to /tmp:', e);
-    }
-    dbUrl = `file:${writableDbPath}`;
-  } else {
-    dbUrl = `file:${bundledDbPath}`;
-  }
-}
-
-const client = createClient({
-  url: dbUrl,
+// All credentials come from environment variables — never hardcoded
+const pool = mysql.createPool({
+  host:     process.env.DB_HOST     || '127.0.0.1',
+  port:     Number(process.env.DB_PORT)  || 3306,
+  database: process.env.DB_NAME,
+  user:     process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  // Required for Hostinger shared hosting which uses self-signed certs
+  ssl: process.env.DB_SSL === 'true' ? {} : undefined,
 });
 
-export default client;
+export default pool;

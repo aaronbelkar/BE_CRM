@@ -1,5 +1,5 @@
-import { drizzle } from 'drizzle-orm/libsql';
-import client from './client';
+import { drizzle } from 'drizzle-orm/mysql2';
+import pool from './client';
 import * as schema from './schema';
 
-export const db = drizzle(client, { schema });
+export const db = drizzle(pool, { schema, mode: 'default' });
