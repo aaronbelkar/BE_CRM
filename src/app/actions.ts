@@ -24,48 +24,6 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
   const password = formData.get('password') as string;
   const remember = formData.get('remember') === 'on';
 
-  // 1. Hardcoded admin check
-  if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com') && password === 'test1234') {
-    const cookieStore = await cookies();
-    cookieStore.set('session', 'admin-user', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      path: '/',
-      sameSite: 'lax',
-      ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
-    });
-
-    if (remember) {
-      cookieStore.set('remember_email', usernameOrEmail, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 30,
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-      });
-    } else {
-      cookieStore.delete('remember_email');
-    }
-    
-    // Seed user if empty
-    try {
-      const u = await db.select().from(usersTable).limit(1);
-      if (u.length === 0) {
-        await db.insert(usersTable).values({
-          id: 'admin-user',
-          name: 'test',
-          email: 'test@test.com',
-          password: 'test1234',
-          role: 'Lead Operator',
-          avatar: 'silhouette',
-        });
-      }
-    } catch (e) {
-      console.error('Failed to seed user:', e);
-    }
-    
-    redirect('/dashboard');
-  }
 
   // 2. Database users check (accepts email or username matches)
   try {
