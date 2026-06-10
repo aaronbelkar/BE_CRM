@@ -560,6 +560,15 @@ npx drizzle-kit push
 
 This applies the schema to the local SQLite file without data loss for existing columns.
 
+## Operator Registration & Admin Approval
+
+To maintain repository security, all new operator registrations must be approved by an administrator before they can log in:
+
+1. **Sign Up**: A new user signs up on the **Register** tab by providing Operator Name, Email, and Password.
+2. **Pending Approval**: After registration, their account remains in a pending state. Attempting to log in will display a notice: `[ERROR]: Your account is pending admin approval.`
+3. **Admin Actions**: An administrator logs in, opens **My Account** (from the top-right avatar), and navigates to the **Pending Approvals** tab.
+4. **Approve or Reject**: The admin can click **Approve** to authorize the user immediately, or **Reject** to delete the registration.
+
 ---
 
 ## Database

@@ -6,7 +6,8 @@ export const users = sqliteTable('users', {
   email: text('email').notNull(),
   password: text('password').notNull(),
   role: text('role').default('Lead Operator'),
-  avatar: text('avatar').default('silhouette')
+  avatar: text('avatar').default('silhouette'),
+  approved: integer('approved', { mode: 'boolean' }).default(false)
 });
 
 export const cards = sqliteTable('cards', {

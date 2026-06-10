@@ -146,12 +146,14 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
   const [subDue, setSubDue] = useState('');
 
   // My Account Modal states
-  const [accountTab, setAccountTab] = useState<'settings' | 'org' | 'tasks'>('settings');
+  const [accountTab, setAccountTab] = useState<'settings' | 'org' | 'tasks' | 'approvals'>('settings');
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
   const [profile, setProfile] = useState({
     name: 'Operator',
     email: 'operator@sovereign.io',
     password: '••••••••',
     avatar: 'silhouette',
+    role: 'Lead Operator',
   });
   const [orgChart, setOrgChart] = useState({
     userRole: 'Lead Operator',
@@ -194,6 +196,12 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
           setProfile(dbProfile);
           localStorage.setItem('user_profile', JSON.stringify(dbProfile));
           window.dispatchEvent(new Event('user-profile-updated'));
+          
+          if (dbProfile.role === 'Admin') {
+            const { getPendingUsersAction } = await import('../../app/actions');
+            const pending = await getPendingUsersAction();
+            setPendingUsers(pending);
+          }
         }
 
         // Load org chart
@@ -233,6 +241,35 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
       console.error(err);
     }
     alert('Profile settings saved successfully.');
+  };
+
+  const handleApproveUser = async (userId: string) => {
+    try {
+      const { approveUserAction } = await import('../../app/actions');
+      const res = await approveUserAction(userId);
+      if (res.success) {
+        setPendingUsers(prev => prev.filter(u => u.id !== userId));
+      } else {
+        alert(res.error || 'Failed to approve user');
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRejectUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to reject and delete this registration?')) return;
+    try {
+      const { rejectUserAction } = await import('../../app/actions');
+      const res = await rejectUserAction(userId);
+      if (res.success) {
+        setPendingUsers(prev => prev.filter(u => u.id !== userId));
+      } else {
+        alert(res.error || 'Failed to reject user');
+      }
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const [uploadError, setUploadError] = useState('');
@@ -2339,17 +2376,22 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
 
           {/* Tabs header */}
           <div className="flex border-b border-border-color pb-2 gap-4 text-xs font-mono">
-            {(['settings', 'org', 'tasks'] as const).map((tab) => (
+            {([
+              { id: 'settings', label: 'Settings' },
+              { id: 'org', label: 'Org Chart' },
+              { id: 'tasks', label: 'My Tasks' },
+              ...(profile.role === 'Admin' ? [{ id: 'approvals', label: 'Pending Approvals' }] : [])
+            ] as Array<{ id: 'settings' | 'org' | 'tasks' | 'approvals'; label: string }>).map((tab) => (
               <button
-                key={tab}
-                onClick={() => setAccountTab(tab)}
+                key={tab.id}
+                onClick={() => setAccountTab(tab.id)}
                 className={`pb-1 cursor-pointer transition-colors uppercase border-b-2 font-bold ${
-                  accountTab === tab
+                  accountTab === tab.id
                     ? 'border-[#e67e22] text-[#e67e22]'
                     : 'border-transparent text-text-muted hover:text-text-main'
                 }`}
               >
-                {tab === 'settings' ? 'Settings' : tab === 'org' ? 'Org Chart' : 'My Tasks'}
+                {tab.label}
               </button>
             ))}
           </div>
@@ -2599,6 +2641,56 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
                       <tr>
                         <td colSpan={6} className="p-6 text-center text-text-muted font-mono uppercase">
                           No tasks currently assigned to you.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4: PENDING APPROVALS */}
+          {accountTab === 'approvals' && profile.role === 'Admin' && (
+            <div className="space-y-4 pt-2">
+              <span className="block text-[10px] font-mono text-text-muted uppercase tracking-wider">
+                Pending Operator Registrations
+              </span>
+              
+              <div className="border border-border-color rounded-3xl overflow-hidden bg-background">
+                <table className="w-full border-collapse text-left text-xs">
+                  <thead>
+                    <tr className="bg-surface border-b border-border-color font-mono text-[10px] text-text-muted uppercase">
+                      <th className="p-3">Operator Name</th>
+                      <th className="p-3">Email Address</th>
+                      <th className="p-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border-color/40 dark:divide-zinc-700/80">
+                    {pendingUsers.map((u) => (
+                      <tr key={u.id} className="hover:bg-surface/50 transition-colors">
+                        <td className="p-3 font-serif font-bold text-text-main">{u.name}</td>
+                        <td className="p-3 font-mono text-[10px] text-text-muted">{u.email}</td>
+                        <td className="p-3 text-right space-x-2">
+                          <button
+                            onClick={() => handleApproveUser(u.id)}
+                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-[10px] font-semibold transition-colors cursor-pointer"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => handleRejectUser(u.id)}
+                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-full text-[10px] font-semibold transition-colors cursor-pointer"
+                          >
+                            Reject
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {pendingUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="p-6 text-center text-text-muted font-mono uppercase col-span-3">
+                          No pending approvals.
                         </td>
                       </tr>
                     )}

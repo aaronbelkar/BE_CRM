@@ -19,11 +19,36 @@ export async function getCurrentUserId() {
 }
 
 
+async function seedAdminUserIfNeeded() {
+  try {
+    const admin = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.name, 'admin'))
+      .limit(1);
+
+    if (admin.length === 0) {
+      await db.insert(usersTable).values({
+        id: 'admin-user',
+        name: 'admin',
+        email: 'admin@sovereign.io',
+        password: '!Qaz@Wsx',
+        role: 'Admin',
+        avatar: 'silhouette',
+        approved: true,
+      });
+    }
+  } catch (e) {
+    console.error('Failed to seed admin user:', e);
+  }
+}
+
 export async function loginAction(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
   const usernameOrEmail = formData.get('username') as string;
   const password = formData.get('password') as string;
   const remember = formData.get('remember') === 'on';
 
+  await seedAdminUserIfNeeded();
 
   // 2. Database users check (accepts email or username matches)
   try {
@@ -42,8 +67,13 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
       .limit(1);
 
     if (matched.length > 0) {
+      const user = matched[0];
+      if (!user.approved) {
+        return { success: false, error: 'Your account is pending admin approval.' };
+      }
+
       const cookieStore = await cookies();
-      cookieStore.set('session', matched[0].id, {
+      cookieStore.set('session', user.id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         path: '/',
@@ -65,6 +95,10 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
       redirect('/dashboard');
     }
   } catch (e) {
+    // If it's a redirect error, let it propagate
+    if (e instanceof Error && e.message === 'NEXT_REDIRECT') {
+      throw e;
+    }
     console.error('Database login error:', e);
     return { success: false, error: 'Database authentication failed' };
   }
@@ -102,29 +136,53 @@ export async function registerAction(prevState: ActionState | null, formData: Fo
       password,
       role: 'Lead Operator',
       avatar: 'silhouette',
+      approved: false, // Must be approved by admin
     });
 
-    // Auto-authenticate upon registration
-    const cookieStore = await cookies();
-    cookieStore.set('session', userId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
-      path: '/',
-      sameSite: 'lax',
-    });
+    return { success: true };
   } catch (e) {
     console.error('Registration failed:', e);
     return { success: false, error: 'Failed to create user. Try again.' };
   }
-
-  redirect('/dashboard');
 }
 
 export async function logoutAction() {
   const cookieStore = await cookies();
   cookieStore.delete('session');
   redirect('/');
+}
+
+// User Admin Approval Actions
+export async function getPendingUsersAction() {
+  const adminId = await getCurrentUserId();
+  if (!adminId) return [];
+  const currentUser = await db.select().from(usersTable).where(eq(usersTable.id, adminId)).limit(1);
+  if (currentUser.length === 0 || currentUser[0].role !== 'Admin') {
+    return [];
+  }
+  return db.select().from(usersTable).where(eq(usersTable.approved, false));
+}
+
+export async function approveUserAction(userId: string) {
+  const adminId = await getCurrentUserId();
+  if (!adminId) return { success: false, error: 'Unauthorized' };
+  const currentUser = await db.select().from(usersTable).where(eq(usersTable.id, adminId)).limit(1);
+  if (currentUser.length === 0 || currentUser[0].role !== 'Admin') {
+    return { success: false, error: 'Unauthorized' };
+  }
+  await db.update(usersTable).set({ approved: true }).where(eq(usersTable.id, userId));
+  return { success: true };
+}
+
+export async function rejectUserAction(userId: string) {
+  const adminId = await getCurrentUserId();
+  if (!adminId) return { success: false, error: 'Unauthorized' };
+  const currentUser = await db.select().from(usersTable).where(eq(usersTable.id, adminId)).limit(1);
+  if (currentUser.length === 0 || currentUser[0].role !== 'Admin') {
+    return { success: false, error: 'Unauthorized' };
+  }
+  await db.delete(usersTable).where(eq(usersTable.id, userId));
+  return { success: true };
 }
 
 // Cards Actions
@@ -388,6 +446,7 @@ export async function getProfileAction() {
       email: 'operator@sovereign.io',
       password: '••••••••',
       avatar: 'silhouette',
+      role: 'Lead Operator',
     };
   }
   return {
@@ -395,6 +454,7 @@ export async function getProfileAction() {
     email: user[0].email,
     password: user[0].password,
     avatar: user[0].avatar || 'silhouette',
+    role: user[0].role || 'Lead Operator',
   };
 }
 

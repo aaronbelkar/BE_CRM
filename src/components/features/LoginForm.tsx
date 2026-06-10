@@ -68,6 +68,12 @@ export function LoginForm() {
         </div>
       )}
 
+      {state?.success && isRegister && (
+        <div className="p-3 bg-emerald-950/50 border border-emerald-500/30 rounded text-xs font-mono text-emerald-400 mb-4">
+          [SUCCESS]: Registration submitted! Please wait for the administrator to approve your account before logging in.
+        </div>
+      )}
+
       {!isRegister ? (
         <form action={loginFormAction} className="space-y-4">
           <div>
