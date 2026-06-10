@@ -6,7 +6,7 @@ import { ThemeToggle } from '../../components/features/ThemeToggle';
 export default async function LoginPage() {
   const cookieStore = await cookies();
   const session = cookieStore.get('session');
-  const isLoggedIn = session && session.value === 'authenticated';
+  const isLoggedIn = !!(session && session.value);
 
   if (isLoggedIn) {
     redirect('/dashboard');
@@ -33,7 +33,7 @@ export default async function LoginPage() {
               className="h-full w-full object-contain hidden dark:block"
             />
           </div>
-          <h2 className="text-xl font-serif font-bold tracking-tight text-text-main mb-1">Sovereign CRM</h2>
+          <h2 className="text-xl font-serif font-bold tracking-tight text-text-main mb-1">BE CRM</h2>
           <p className="text-xs text-text-muted font-mono">operator_auth_gateway</p>
         </div>
         <LoginForm />

@@ -14,7 +14,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const cookieStore = await cookies();
   const session = cookieStore.get('session');
 
-  if (!session || session.value !== 'authenticated') {
+  if (!session || !session.value) {
     redirect('/login');
   }
 

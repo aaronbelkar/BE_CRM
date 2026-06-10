@@ -1,16 +1,38 @@
 'use client';
 
-import { useState, useActionState } from 'react';
+import { useState, useActionState, useEffect } from 'react';
 import { loginAction, registerAction } from '../../app/actions';
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for(let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+  }
+  return null;
+}
 
 export function LoginForm() {
   const [isRegister, setIsRegister] = useState(false);
+  const [username, setUsername] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   
   const [loginState, loginFormAction, loginPending] = useActionState(loginAction, null);
   const [registerState, registerFormAction, registerPending] = useActionState(registerAction, null);
 
   const state = isRegister ? registerState : loginState;
   const isPending = isRegister ? registerPending : loginPending;
+
+  useEffect(() => {
+    const savedEmail = getCookie('remember_email');
+    if (savedEmail) {
+      setUsername(savedEmail);
+      setRememberMe(true);
+    }
+  }, []);
 
   return (
     <div>
@@ -53,6 +75,8 @@ export function LoginForm() {
             <input
               type="text"
               name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
               disabled={isPending}
               className="w-full px-5 py-2.5 bg-background border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
@@ -69,6 +93,18 @@ export function LoginForm() {
               className="w-full px-5 py-2.5 bg-background border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
               placeholder="••••••••"
             />
+          </div>
+          <div className="flex items-center justify-between px-2">
+            <label className="flex items-center space-x-2 text-xs font-mono text-text-muted select-none cursor-pointer">
+              <input
+                type="checkbox"
+                name="remember"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="rounded border-border-color text-[#e67e22] focus:ring-[#e67e22] cursor-pointer bg-background"
+              />
+              <span>Remember Me</span>
+            </label>
           </div>
           <button
             type="submit"

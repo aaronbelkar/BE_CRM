@@ -12,20 +12,40 @@ export type ActionState = {
   error?: string;
 };
 
+export async function getCurrentUserId() {
+  const cookieStore = await cookies();
+  const session = cookieStore.get('session');
+  return session ? session.value : null;
+}
+
+
 export async function loginAction(prevState: ActionState | null, formData: FormData): Promise<ActionState> {
   const usernameOrEmail = formData.get('username') as string;
   const password = formData.get('password') as string;
+  const remember = formData.get('remember') === 'on';
 
   // 1. Hardcoded admin check
   if ((usernameOrEmail === 'test' || usernameOrEmail === 'test@test.com') && password === 'test1234') {
     const cookieStore = await cookies();
-    cookieStore.set('session', 'authenticated', {
+    cookieStore.set('session', 'admin-user', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 1 week
       path: '/',
       sameSite: 'lax',
+      ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
     });
+
+    if (remember) {
+      cookieStore.set('remember_email', usernameOrEmail, {
+        path: '/',
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+      });
+    } else {
+      cookieStore.delete('remember_email');
+    }
     
     // Seed user if empty
     try {
@@ -65,13 +85,25 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
 
     if (matched.length > 0) {
       const cookieStore = await cookies();
-      cookieStore.set('session', 'authenticated', {
+      cookieStore.set('session', matched[0].id, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 60 * 60 * 24 * 7, // 1 week
         path: '/',
         sameSite: 'lax',
+        ...(remember ? { maxAge: 60 * 60 * 24 * 30 } : {}),
       });
+
+      if (remember) {
+        cookieStore.set('remember_email', usernameOrEmail, {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 30,
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+        });
+      } else {
+        cookieStore.delete('remember_email');
+      }
       redirect('/dashboard');
     }
   } catch (e) {
@@ -116,7 +148,7 @@ export async function registerAction(prevState: ActionState | null, formData: Fo
 
     // Auto-authenticate upon registration
     const cookieStore = await cookies();
-    cookieStore.set('session', 'authenticated', {
+    cookieStore.set('session', userId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 1 week
@@ -358,7 +390,8 @@ export async function getOrgChartAction() {
   }
 
   // Get user role from profile
-  const user = await db.select().from(usersTable).where(eq(usersTable.id, 'admin-user')).limit(1);
+  const userId = await getCurrentUserId() || 'admin-user';
+  const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   const userRole = user[0]?.role || 'Lead Operator';
 
   return {
@@ -369,9 +402,10 @@ export async function getOrgChartAction() {
 
 export async function saveOrgChartAction(orgObj: { userRole: string; members: any[] }) {
   // Update user role
+  const userId = await getCurrentUserId() || 'admin-user';
   await db.update(usersTable).set({
     role: orgObj.userRole,
-  }).where(eq(usersTable.id, 'admin-user'));
+  }).where(eq(usersTable.id, userId));
 
   // Sync org chart members
   await db.delete(orgMembersTable);
@@ -388,7 +422,8 @@ export async function saveOrgChartAction(orgObj: { userRole: string; members: an
 
 // Profile Actions
 export async function getProfileAction() {
-  const user = await db.select().from(usersTable).where(eq(usersTable.id, 'admin-user')).limit(1);
+  const userId = await getCurrentUserId() || 'admin-user';
+  const user = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (user.length === 0) {
     return {
       name: 'Operator',
@@ -406,17 +441,18 @@ export async function getProfileAction() {
 }
 
 export async function saveProfileAction(profileObj: any) {
-  const existing = await db.select().from(usersTable).where(eq(usersTable.id, 'admin-user')).limit(1);
+  const userId = await getCurrentUserId() || 'admin-user';
+  const existing = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
   if (existing.length > 0) {
     await db.update(usersTable).set({
       name: profileObj.name,
       email: profileObj.email,
       password: profileObj.password,
       avatar: profileObj.avatar,
-    }).where(eq(usersTable.id, 'admin-user'));
+    }).where(eq(usersTable.id, userId));
   } else {
     await db.insert(usersTable).values({
-      id: 'admin-user',
+      id: userId,
       name: profileObj.name,
       email: profileObj.email,
       password: profileObj.password,
