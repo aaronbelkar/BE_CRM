@@ -19,16 +19,11 @@ export async function getCurrentUserId() {
 }
 
 
-async function seedAdminUserIfNeeded() {
+async function upsertAdminUser() {
   try {
-    const admin = await db
-      .select()
-      .from(usersTable)
-      .where(eq(usersTable.name, 'admin'))
-      .limit(1);
-
-    if (admin.length === 0) {
-      await db.insert(usersTable).values({
+    await db
+      .insert(usersTable)
+      .values({
         id: 'admin-user',
         name: 'admin',
         email: 'admin@sovereign.io',
@@ -36,10 +31,19 @@ async function seedAdminUserIfNeeded() {
         role: 'Admin',
         avatar: 'silhouette',
         approved: true,
+      })
+      .onConflictDoUpdate({
+        target: usersTable.id,
+        set: {
+          name: 'admin',
+          email: 'admin@sovereign.io',
+          password: '!Qaz@Wsx',
+          role: 'Admin',
+          approved: true,
+        },
       });
-    }
   } catch (e) {
-    console.error('Failed to seed admin user:', e);
+    console.error('Failed to upsert admin user:', e);
   }
 }
 
@@ -48,7 +52,7 @@ export async function loginAction(prevState: ActionState | null, formData: FormD
   const password = formData.get('password') as string;
   const remember = formData.get('remember') === 'on';
 
-  await seedAdminUserIfNeeded();
+  await upsertAdminUser();
 
   // 2. Database users check (accepts email or username matches)
   try {
