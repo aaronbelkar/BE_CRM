@@ -1,5 +1,7 @@
 # BE CRM — Sovereign CRM & Kanban Hub
 
+**Version:** 1.0.0
+
 A self-hosted, open-source CRM and Kanban workspace built with **Next.js 15**, **SQLite (Drizzle ORM)**, and a full **REST API** for agent integration.
 
 ---
