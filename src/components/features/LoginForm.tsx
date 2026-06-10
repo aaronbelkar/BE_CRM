@@ -96,7 +96,7 @@ export function LoginForm() {
               name="password"
               required
               disabled={isPending}
-              className="w-full px-5 py-2.5 bg-[#e5e7e9] border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
+              className="w-full px-5 py-2.5 bg-background border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
               placeholder="••••••••"
             />
           </div>
@@ -151,7 +151,7 @@ export function LoginForm() {
               name="password"
               required
               disabled={isPending}
-              className="w-full px-5 py-2.5 bg-[#e5e7e9] border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
+              className="w-full px-5 py-2.5 bg-background border border-border-color rounded-full text-sm text-text-main focus:outline-none focus:border-[#e67e22] font-mono transition-colors disabled:opacity-50"
               placeholder="••••••••"
             />
           </div>
