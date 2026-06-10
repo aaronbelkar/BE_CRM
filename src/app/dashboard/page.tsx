@@ -46,7 +46,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <KanbanBoard
           boardName={activeBoardName}
           columns={activeBoard.columns}
-          initialCards={activeBoard.cards}
+          initialCards={[]}
         />
       )}
     </DashboardShell>
