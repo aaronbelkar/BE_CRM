@@ -1,3 +1,11 @@
+// Load environment variables from .env file before anything else
+// This is needed for Hostinger Passenger which doesn't auto-inject env vars
+try {
+  require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+} catch (e) {
+  // dotenv not available, rely on process.env set by the hosting panel
+}
+
 const { createServer } = require('http');
 const { parse } = require('url');
 const next = require('next');
