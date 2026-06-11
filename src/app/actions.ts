@@ -362,10 +362,16 @@ export async function saveCardAction(card: any, boardName: string) {
     console.error('[saveCardAction] MySQL error:', err);
     const errDetails = {
       message: err?.message,
-      code: err?.code,
-      errno: err?.errno,
-      sqlMessage: err?.sqlMessage,
-      sqlState: err?.sqlState,
+      code: err?.code || err?.cause?.code,
+      errno: err?.errno || err?.cause?.errno,
+      sqlMessage: err?.sqlMessage || err?.cause?.sqlMessage,
+      sqlState: err?.sqlState || err?.cause?.sqlState,
+      cause: err?.cause ? {
+        message: err.cause.message,
+        code: err.cause.code,
+        errno: err.cause.errno,
+        sqlMessage: err.cause.sqlMessage,
+      } : undefined,
       stack: err?.stack,
     };
     return { success: false, error: JSON.stringify(errDetails, null, 2) };
