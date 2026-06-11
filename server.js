@@ -1,9 +1,18 @@
 // Load environment variables from .env file before anything else
 // This is needed for Hostinger Passenger which doesn't auto-inject env vars
+const path = require('path');
+const envPath = path.join(__dirname, '.env');
 try {
-  require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+  const result = require('dotenv').config({ path: envPath });
+  if (result.error) {
+    console.error(`[server] Failed to load .env from ${envPath}:`, result.error.message);
+    console.error(`[server] DB operations will fail. Create a .env file at: ${envPath}`);
+  } else {
+    console.log(`[server] Loaded .env from ${envPath}`);
+    console.log(`[server] DB_HOST=${process.env.DB_HOST}, DB_NAME=${process.env.DB_NAME}, DB_USER=${process.env.DB_USER}, DB_SSL=${process.env.DB_SSL}`);
+  }
 } catch (e) {
-  // dotenv not available, rely on process.env set by the hosting panel
+  console.error(`[server] dotenv not available or failed:`, e.message);
 }
 
 const { createServer } = require('http');
