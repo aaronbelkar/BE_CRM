@@ -360,7 +360,15 @@ export async function saveCardAction(card: any, boardName: string) {
     return { success: true };
   } catch (err: any) {
     console.error('[saveCardAction] MySQL error:', err);
-    return { success: false, error: err?.message || String(err) };
+    const errDetails = {
+      message: err?.message,
+      code: err?.code,
+      errno: err?.errno,
+      sqlMessage: err?.sqlMessage,
+      sqlState: err?.sqlState,
+      stack: err?.stack,
+    };
+    return { success: false, error: JSON.stringify(errDetails, null, 2) };
   }
 }
 
