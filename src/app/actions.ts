@@ -287,76 +287,81 @@ export async function getCardsAction(boardName: string) {
 export async function saveCardAction(card: any, boardName: string) {
   const lowercaseBoard = boardName.toLowerCase();
   
-  // Upsert Card
-  const existing = await db.select().from(cardsTable).where(eq(cardsTable.id, card.id)).limit(1);
-  if (existing.length > 0) {
-    await db.update(cardsTable).set({
-      title: card.title,
-      status: card.status,
-      subtitle: card.subtitle || '',
-      contactName: card.contactName || '',
-      email: card.email || '',
-      value: card.value || '',
-      phone: card.phone || '',
-      pricingMethod: card.pricingMethod || 'Fixed Price',
-      totalRate: card.totalRate || '',
-      startDate: card.startDate || '',
-      quoteDescription: card.quoteDescription || '',
-      details: card.details || '',
-      description: card.description || '',
-      amount: card.amount || '',
-      dueDate: card.dueDate || '',
-      priority: card.priority || 'Medium',
-      assignee: card.assignee || 'Operator',
-      monthlyFee: card.monthlyFee || '',
-      endDate: card.endDate || '',
-    }).where(eq(cardsTable.id, card.id));
-  } else {
-    await db.insert(cardsTable).values({
-      id: card.id,
-      board: lowercaseBoard,
-      title: card.title,
-      status: card.status,
-      subtitle: card.subtitle || '',
-      contactName: card.contactName || '',
-      email: card.email || '',
-      value: card.value || '',
-      phone: card.phone || '',
-      pricingMethod: card.pricingMethod || 'Fixed Price',
-      totalRate: card.totalRate || '',
-      startDate: card.startDate || '',
-      quoteDescription: card.quoteDescription || '',
-      details: card.details || '',
-      description: card.description || '',
-      amount: card.amount || '',
-      dueDate: card.dueDate || '',
-      priority: card.priority || 'Medium',
-      assignee: card.assignee || 'Operator',
-      monthlyFee: card.monthlyFee || '',
-      endDate: card.endDate || '',
-    });
-  }
-
-  // Delete existing subtasks
-  await db.delete(subTasksTable).where(eq(subTasksTable.cardId, card.id));
-
-  // Insert updated subtasks
-  if (card.subTasks && card.subTasks.length > 0) {
-    for (const sub of card.subTasks) {
-      await db.insert(subTasksTable).values({
-        id: sub.id,
-        cardId: card.id,
-        description: sub.description,
-        details: sub.details || '',
-        owner: sub.owner || '',
-        startDate: sub.startDate || '',
-        dueDate: sub.dueDate || '',
-        completed: sub.completed || false,
+  try {
+    // Upsert Card
+    const existing = await db.select().from(cardsTable).where(eq(cardsTable.id, card.id)).limit(1);
+    if (existing.length > 0) {
+      await db.update(cardsTable).set({
+        title: card.title,
+        status: card.status,
+        subtitle: card.subtitle || '',
+        contactName: card.contactName || '',
+        email: card.email || '',
+        value: card.value || '',
+        phone: card.phone || '',
+        pricingMethod: card.pricingMethod || 'Fixed Price',
+        totalRate: card.totalRate || '',
+        startDate: card.startDate || '',
+        quoteDescription: card.quoteDescription || '',
+        details: card.details || '',
+        description: card.description || '',
+        amount: card.amount || '',
+        dueDate: card.dueDate || '',
+        priority: card.priority || 'Medium',
+        assignee: card.assignee || 'Operator',
+        monthlyFee: card.monthlyFee || '',
+        endDate: card.endDate || '',
+      }).where(eq(cardsTable.id, card.id));
+    } else {
+      await db.insert(cardsTable).values({
+        id: card.id,
+        board: lowercaseBoard,
+        title: card.title,
+        status: card.status,
+        subtitle: card.subtitle || '',
+        contactName: card.contactName || '',
+        email: card.email || '',
+        value: card.value || '',
+        phone: card.phone || '',
+        pricingMethod: card.pricingMethod || 'Fixed Price',
+        totalRate: card.totalRate || '',
+        startDate: card.startDate || '',
+        quoteDescription: card.quoteDescription || '',
+        details: card.details || '',
+        description: card.description || '',
+        amount: card.amount || '',
+        dueDate: card.dueDate || '',
+        priority: card.priority || 'Medium',
+        assignee: card.assignee || 'Operator',
+        monthlyFee: card.monthlyFee || '',
+        endDate: card.endDate || '',
       });
     }
-  }
 
-  return { success: true };
+    // Delete existing subtasks
+    await db.delete(subTasksTable).where(eq(subTasksTable.cardId, card.id));
+
+    // Insert updated subtasks
+    if (card.subTasks && card.subTasks.length > 0) {
+      for (const sub of card.subTasks) {
+        await db.insert(subTasksTable).values({
+          id: sub.id,
+          cardId: card.id,
+          description: sub.description,
+          details: sub.details || '',
+          owner: sub.owner || '',
+          startDate: sub.startDate || '',
+          dueDate: sub.dueDate || '',
+          completed: sub.completed ? true : false,
+        });
+      }
+    }
+
+    return { success: true };
+  } catch (err: any) {
+    console.error('[saveCardAction] MySQL error:', err);
+    return { success: false, error: err?.message || String(err) };
+  }
 }
 
 export async function deleteCardAction(cardId: string) {

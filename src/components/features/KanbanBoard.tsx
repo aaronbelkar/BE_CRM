@@ -692,7 +692,11 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
 
     try {
       const { saveCardAction, logActivityAction } = await import('../../app/actions');
-      await saveCardAction(newCard, boardName);
+      const result = await saveCardAction(newCard, boardName);
+      if (!result.success) {
+        alert(`[DB Error] Failed to save ticket: ${result.error}`);
+        return;
+      }
       await logActivityAction(`Ticket "${editTitle}" (${newId}) created`, boardName);
 
       // Auto-create contact card if name doesn't exist on Contacts board yet
@@ -715,6 +719,7 @@ export function KanbanBoard({ boardName, columns, initialCards }: KanbanBoardPro
       }
     } catch (err) {
       console.error(err);
+      alert(`[Network Error] ${err}`);
     }
 
     createDialogRef.current?.close();
